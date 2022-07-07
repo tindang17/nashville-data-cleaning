@@ -73,3 +73,20 @@ ADD COLUMN owner_split_state STRING;
 UPDATE nashville_housing.nashville_housing_data
 SET owner_split_state = SUBSTR(owner_address, -2, 2)
 WHERE owner_split_state is NULL;
+
+--Remove duplicates
+-- Remove duplicates
+BEGIN
+CREATE TEMP TABLE row_num_temp AS
+    SELECT
+        *,
+        ROW_NUMBER() OVER (
+            PARTITION BY parcel_id, property_address, sale_price, sale_date, legal_reference
+            ORDER BY id
+        ) as row_num
+    FROM 
+        `unique-result-230022.nashville_housing.nashville_housing_data`;
+DELETE
+FROM row_num_temp
+WHERE row_num > 1;
+END;
